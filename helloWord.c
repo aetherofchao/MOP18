@@ -1,24 +1,24 @@
 #include <stdio.h>
 
-struct List
+struct List // jelikož nezname "velikost" křižovatky a nemůžeme si dovolit 10^12 ~ terabyte paměrti. primitivní verze listu 
 {
-    int resize = 10;
-    long leng = 5   //je průměrná velikost listu 
-    long pole = malloc(sizeof(long)*leng); 
-    long count = 0; // ukazatel posledního zapsaného věci
+    int resize = 3;
+    long Size = 6; //je průměrná velikost listu 
+    long ulice = malloc(sizeof(long)*Size); 
+    long Lengh = 0; // ukazatel posledního zapsaného věci
     
     int add(long addition)
     {
         // basecase
-        if (count == leng) // 
+        if (++Lengh == Size) // 
         {   
-            leng *= resize;
-            pole = (long*)relloc(pole, sizeof(long)*leng);
+            Size *= resize;
+            ulice = (long*)relloc(ulice, sizeof(long)*Size);
         }
         
         // add
-        count++;
-        pole[count] = addition;
+        ulice[Lengh] = addition;
+        Lengh++;
         return 0;
     }
     bool IsOdd;
@@ -26,9 +26,22 @@ struct List
 
 int pop(long a, long b)
 {
-    mesto[a].pole[b] = NULL; // vimaž cestu od 1 do 2 města a opačně
-    mesto[b].pole[a] = NULL; // je Null povole pro long?
+    for (int i = 0; i < krizovatka[a].Lengh; i++)
+    {
+        if (krizovatka[a].ulice[i] == b) {
+            krizovatka[a].ulice[i] == 0;
+            break;
+        }
+    }
+    for (int i = 0; i < krizovatka[b].Lengh; i++)
+    {
+        if (krizovatka[b].ulice[i] == a) {
+            krizovatka[b].ulice[i] == 0;
+            break;
+        }
+    }
 }
+
 
 int main(void)
 {
@@ -38,62 +51,84 @@ int main(void)
     scanf("%i %i %i",&n, &m, &k);
     
     // declaruj proměné
-    List mesto[n];
-    long zakazene[2*k];
-    long liche[n], licheCount = 0;
+    List krizovatka[++n];
+    long zakazene[2*k + 1];
+    long liche[++n], licheLengh = 0;
      
-    // načti pole 
+    // načti ulice 
     int tmp1, tmp2;
-    for (int i = 0, j = 0; i < m; i++) // prjdi všechny řadky vztupu 
+    for (int i = 1; i <= m; i++) // prjdi všechny řadky vztupu 
     {
         scanf("%i %i",&tmp1, &tmp2);
-        mesto[tmp1].add(tmp2);  // z 1ho města do druhého 
-        mesto[tmp2].add(tmp1);  // Z 2ho do 1ho
+        krizovatka[tmp1].add(tmp2);  // z 1ho města do druhého 
+        krizovatka[tmp2].add(tmp1);  // Z 2ho do 1ho
         
-        if(j < k) // potřebuju někat uložit které ul jsou zakazané zbořit
+        if(--i < k) // potřebuju někat uložit které ul jsou zakazané zbořit
         {
-            zakazene[2*j] = tmp1;
-            zakazene[2*j +1] = tmp2;
+            zakazene[2*i] = tmp1;
+            zakazene[2*i +1] = tmp2;
         }
     }
     
     // urči liché 
     // lichost můžeme kontrolovat až po načtení 
-    for (int i = 0; i < m; i++)
+    for (int i = 1; i <= n; i++)
     {
-        if (mesto[i].count %2 != 0) 
+        if (krizovatka[i].Lengh %2 != 0) 
         {
-            mesto[i].IsOdd = true;
-            liche[licheCount] = i;
-            licheCount++;
+            krizovatka[i].IsOdd = true;
+            liche[licheLengh] = --i;
+            licheLengh++;
         }
-        else mesto[i].IsOdd = false;
+        else krizovatka[i].IsOdd = false;
     } 
+    // nejsou-li zaden liché križovatky řešení je 0
+    if (licheLengh == 0) return 0;
+    
     // už víme kterých měst se snažíme zbavit --> lichost nemusíme už kontrolovat
 
     // ulice které nesmíme už použít budeme odstranovat (ty ktere mají být zbořenny starostou zaroven ukladat)
     for (int i = 0; i < k; i++)
     {
         // zboříme ty ulice u kterých je to zakazané jsem totiž rebel
-        pop(zakazene[2*k], zakazane[2*k +1]);       
+        pop(zakazene[2*i], zakazane[2*i +1]);       
         // zakazané je uložené jako sude a liché 
     }
     
     // najdi vždy 2 nejbiší kriřovatky >>> inspirace Bellmann-Fordovým algoritmem (použití negativních ciklů je užitečné až v druhém příkladu)<<<
     
-    for (int start = 0; start< licheCount; start++)
+    for (long start = 0; start< licheLengh; start++)
     {
-        long pouzite[n], pouziteCount = 0;
-        long predecesors[n], predecesorsCount = 0;
+        long curent = liche[start];
+        long predecesor[++n];
+        
+        // iniciuj predecesor jako prazdný
+        for (long i = 1; i <= n; i++)
+        {
+            predecesor[i] == 0;
+        }
         
         while(true /* dokud se nenajde další lichá ulice*/)
         {
+                // TODO udelat metodu recursive algorithtm
+               for (int i = 0; i < krizovatka[curent].Lengh; i++) // všechna krizivatky z aktualní pozice
+               {
+                   long dalsi = krizovatka[curent].ulice[i]; 
+                   
+                   // Basecase
+                   if (dalsi == 0 || predecesor[dalsi] == 0) // nezajímej se o hodnoty 0 aka. ty které jsme vyřadily 
+                   {
+                       continue;
+                   }
+                   if (krizovatka[dalsi].IsOdd)
+                   {
+                       /*updatereturn*/
+                   }
+                   
+                   // jednorozmerná cesta k počátku
+                   predecesor[dalsi] = curent;
             
+               }
         }
-        
     }
-    
-    
-    
-    
 }
