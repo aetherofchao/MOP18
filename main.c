@@ -1,36 +1,45 @@
 #include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 struct List{
     long Size;
-    long ulice[5]; 
+    long *ulice; 
     long Lengh; // ukazatel posledního zapsaného věci
     bool IsOdd;
 };
 
 
 // declare all global variables
-// int pop(long a, long b);
 int load();
 int lichost();
-int next(long pocatek, long b);
-int addition(struct krizovatka ulice, long addition);
+int vynuluj(long *pole, long b);
+int next(long pocatek);
+int addition(struct List *node, long addition);
+int spojL(long pocatek);
 
 long n, m, k;
 struct List *krizovatka;
-long *Temp; long tempLeng = 0;
-long *liche; long licheLengh = 0;
+long *Temp; 
+long tempLeng;
+long *liche; 
+long licheLengh;
 long *predecesor;
 
 
 //  >>>>> Maaaain <<<<<
-int main(void)
+int main()
 {
     // dostan rozměry
     scanf("%ld %ld %ld",&n, &m, &k);
+    tempLeng = 0;
+    licheLengh = 0;
     
-    krizovatka = (struct List *)malloc( ++n);
+    krizovatka = (struct List*)calloc(++n, sizeof(struct List));
     for (int i = 0; i <= n; i++)
     {
+        krizovatka[i].Size=5; 
+        krizovatka[i].ulice = (long*)calloc(5,sizeof(long)); 
         krizovatka[i].Lengh = 0;
     }
     Temp = (long *)malloc(n);
@@ -52,18 +61,18 @@ int main(void)
     }
 }
 
-int add(struct krizovatka node, long addition)
+int add(struct List *node, long addition)
 { 
     // basecase
-    if (++node.Lengh == node.Size) // 
+    if (++node->Lengh == node->Size) // 
     {   
-        node.Size *= node.times;
-        node.ulice = (long*)relloc(node.ulice,node.Size);
+        node->Size *= 3;
+        node->ulice = (long*)realloc(node->ulice,node->Size);
     }
     
     // add
-    node.ulice[node.Lengh] = addition;
-    node.Lengh++;
+    node->ulice[node->Lengh] = addition;
+    node->Lengh++;
     return 0;
 }
 int spojL(long pocatek)
@@ -112,7 +121,7 @@ int next(long pocatek)
     }
 }
 
-int vunuluj(long *pole, long b)
+int vynuluj(long *pole, long b)
 {
     for (long i = 0; i < b; i++)
         {
@@ -129,13 +138,13 @@ int load()
         scanf("%i %i",&tmp1, &tmp2);
         if(--i < k) // potřebuju někat uložit které ul jsou zakazané zbořit
         {
-            krizovatka[tmp1].add(0);  // potřebujeme abycho mohly stale urcit lichost ale nedostali se z tmp1 do tmp2
-            krizovatka[tmp2].add(0); 
+            add(&krizovatka[tmp1],0);  // potřebujeme abycho mohly stale urcit lichost ale nedostali se z tmp1 do tmp2
+            add(&krizovatka[tmp2],0); 
         }
         else
         {
-            krizovatka[tmp1].add(tmp2);  // z 1ho města do druhého 
-            krizovatka[tmp2].add(tmp1);  // Z 2ho do 1ho
+            add(&krizovatka[tmp1],tmp2);  // z 1ho města do druhého 
+            add(&krizovatka[tmp2],tmp1);  // Z 2ho do 1ho
         }
     }
     return 0;
