@@ -14,17 +14,23 @@ struct List{
 int load();
 int lichost();
 int vynuluj(long *pole, long b);
-int next(long pocatek);
+int next();
 int addition(struct List *node, long addition);
 int spojL(long pocatek);
+int egeing();
+int addToReturn(long position);
 
 long n, m, k;
 struct List *krizovatka;
-long *Temp; 
-long tempLeng;
+long *newGenration; 
+long newGenrationLeng;
+long *oldgeneration;
+long oldgenerationLengh;
 long *liche; 
 long licheLengh;
 long *predecesor;
+long *BigReturn;
+long BigReturnLengh;
 
 
 //  >>>>> Maaaain <<<<<
@@ -32,19 +38,22 @@ int main()
 {
     // dostan rozměry
     scanf("%ld %ld %ld",&n, &m, &k);
-    tempLeng = 0;
+    newGenrationLeng = 0;
     licheLengh = 0;
+    BigReturnLengh = 0;
     
-    krizovatka = (struct List*)calloc(++n, sizeof(struct List));
+    krizovatka = (struct List*)calloc(n +1, sizeof(struct List));
     for (int i = 0; i <= n; i++)
     {
-        krizovatka[i].Size=5; 
+        krizovatka[i].Size=5*sizeof(long); 
         krizovatka[i].ulice = (long*)calloc(5,sizeof(long)); 
         krizovatka[i].Lengh = 0;
     }
-    Temp = (long *)malloc(n);
-    liche = (long *)malloc( ++n);
-    predecesor =(long *)malloc( ++n);
+    newGenration = (long *)calloc(n,sizeof(long)); 
+    oldgeneration = (long *)calloc(n,sizeof(long)); 
+    BigReturn = (long *)calloc(2*n,sizeof(long)); 
+    liche = (long *)calloc(n+1,sizeof(long)); 
+    predecesor =(long *)calloc(n+1,sizeof(long)); 
     
     load();
     
@@ -52,19 +61,57 @@ int main()
     // už víme kterých měst se snažíme zbavit --> lichost nemusíme už kontrolovat
     
     // nejsou-li zaden liché križovatky řešení je 0
-    if (licheLengh == 0) return 0;
-
-    // najdi vždy 2 nejbiší kriřovatky >>> inspirace Bellmann-Fordovým algoritmem (použití negativních ciklů je užitečné až v druhém příkladu)<<<
-    for (long lichePocatek = 0; lichePocatek< licheLengh; lichePocatek++)
+    if (licheLengh == 0) 
     {
-        spojL(liche[lichePocatek]);
+        printf("0");
+        return 1;
     }
+    // najdi vždy 2 nejbiší kriřovatky >>> inspirace Bellmann-Fordovým algoritmem (použití negativních ciklů je užitečné až v druhém příkladu)<<<
+    for (long i = 0; i< licheLengh; i++)
+    {
+        long tmp = liche[i];
+        if (krizovatka[tmp].IsOdd == false) continue;
+        if (spojL(tmp) == 1)
+        {
+            printf("-1");
+            return -1;
+        }
+    }
+    
+    for (long i = 0; i < BigReturnLengh; i += 2)
+    {
+        printf("\n%ld %ld",BigReturn[i], BigReturn[i + 1]);
+    }
+    return 0;
+}
+int dell(long a, long b)
+{
+    for (int i = 0; i < krizovatka[a].Lengh; i++)
+    {
+        if(krizovatka[a].ulice[i] == b) krizovatka[a].ulice[i] = 0;
+    }
+}
+int addToReturn(long position)
+{
+    if (predecesor[position] == position) return 0;
+   
+    BigReturn[BigReturnLengh] = position;
+    BigReturn[BigReturnLengh+ 1] = predecesor[position];
+    BigReturnLengh += 2;
+    
+    // delite root
+    dell(predecesor[position], position);
+    dell(position, predecesor[position]);
+    // tato operace je kontroverzní ??????? neměl bych raději ukládat číslo ulice v predesesor[2,] ???????
+    
+    addToReturn(predecesor[position]);
 }
 
 int add(struct List *node, long addition)
 { 
     // basecase
-    if (++node->Lengh == node->Size) // 
+
+    if (node->Lengh +1 == node->Size) // 
     {   
         node->Size *= 3;
         node->ulice = (long*)realloc(node->ulice,node->Size);
@@ -77,47 +124,58 @@ int add(struct List *node, long addition)
 }
 int spojL(long pocatek)
 {
-    vynuluj(predecesor, ++n);
+    krizovatka[pocatek].IsOdd = false; // po skoncení nebude licha
+    newGenration[0] = pocatek;
+    newGenrationLeng = 1;
+    vynuluj(predecesor,n +1);
+    predecesor[pocatek] = pocatek;
+    
     while (true)
     {
+        if (next() == 0) return 0; // vsehno probehlo hladce
         // basecase
-        if (tempLeng == 0) return 1; // zadna cesta nevede do říma
-        
-        vynuluj(Temp,n);
-        tempLeng = 0;
-        
-        for ( int i = 0; i < tempLeng; i++)
-        {
-            if (next(Temp[i]) == 0) return 0;
-        }
+        if (newGenrationLeng == 0) return 1; // zadna cesta nevede do říma
     }
 }
 
-
-int next(long pocatek)
+int egeing()
 {
-    for (int i = 0; i < krizovatka[pocatek].Lengh; i++) // všechna krizivatky z aktualní pozice
+    for (int i = 0; i <= newGenrationLeng; i++)
     {
-        long dalsi = krizovatka[pocatek].ulice[i]; 
-        
-        // ignoruj vymazane
-        if (dalsi == 0 || predecesor[dalsi] != 0) continue; // nezajímej se o hodnoty 0 aka. ty které jsme vyřadily 
-        
-        // basecase
-        if (krizovatka[dalsi].IsOdd)
+        oldgeneration[i] = newGenration[i];
+    }
+    oldgenerationLengh = newGenrationLeng;
+}
+
+int next()
+{
+    egeing();
+    newGenrationLeng = 0;
+    for (long tmp = 0; tmp < oldgenerationLengh; tmp++)
+    {
+        long pocatek = oldgeneration[tmp];
+        for (int i = 0; i < krizovatka[pocatek].Lengh; i++) // všechna krizivatky z aktualní pozice
         {
-            // TODO 
-            //  - zahrn cestu k dalsi ve Return
-            //  - odstran cestu 
-            //  - should be function
-              
-            return 0; // all have gone good 
+            long dalsi = krizovatka[pocatek].ulice[i]; 
+           
+            // ignoruj vymazane
+            if (dalsi == 0 || predecesor[dalsi] != 0) continue; // nezajímej se o hodnoty 0 aka. ty které jsme vyřadily 
+            
+            // jednorozmerná cesta k počátku
+            predecesor[dalsi] = pocatek;
+            
+            // basecase
+            if (krizovatka[dalsi].IsOdd)
+            {
+                // uz není liche 
+                krizovatka[dalsi].IsOdd = false;
+    
+                addToReturn(dalsi);
+                return 0; // all have gone good 
+            }
+            newGenration[newGenrationLeng] = dalsi;
+            newGenrationLeng++;
         }
-        
-        // jednorozmerná cesta k počátku
-        predecesor[dalsi] = pocatek;
-        Temp[tempLeng] = dalsi;
-        tempLeng++;
     }
 }
 
@@ -125,7 +183,7 @@ int vynuluj(long *pole, long b)
 {
     for (long i = 0; i < b; i++)
         {
-            pole[i] == 0;
+            pole[i] = 0;
         }
 }
 
@@ -136,7 +194,7 @@ int load()
     for (int i = 1; i <= m; i++) // projdi všechny řadky vztupu 
     {
         scanf("%i %i",&tmp1, &tmp2);
-        if(--i < k) // potřebuju někat uložit které ul jsou zakazané zbořit
+        if(i -1 < k) // potřebuju někat uložit které ul jsou zakazané zbořit
         {
             add(&krizovatka[tmp1],0);  // potřebujeme abycho mohly stale urcit lichost ale nedostali se z tmp1 do tmp2
             add(&krizovatka[tmp2],0); 
@@ -154,15 +212,68 @@ int lichost()
 {
     // urči liché 
     // lichost můžeme kontrolovat až po načtení 
-    for (int i = 1; i <= n; i++)
+    for (long i = 1; i <= n; i++)
     {
         if (krizovatka[i].Lengh %2 != 0) 
         {
             krizovatka[i].IsOdd = true;
-            liche[licheLengh] = --i;
+            liche[licheLengh] = i;
             licheLengh++;
         }
         else krizovatka[i].IsOdd = false;
     }
+    krizovatka[0].IsOdd = false;
     return 0;
 }
+
+/*
+    Tests
+    
+11 31 6
+1 3
+1 5
+1 7
+1 9
+1 11
+2 3
+2 4
+2 5
+2 6
+2 1
+2 7
+2 8
+2 9
+3 4
+3 8
+3 9
+4 5
+4 8
+4 1
+6 1
+6 7
+6 8
+6 9
+6 10
+7 9
+7 10
+7 11
+8 9
+9 10
+10 11
+1 5
+
+5 6 1
+1 2
+1 3
+1 4
+3 2
+5 2
+4 5
+
+3 3 2
+1 2
+1 3
+2 3
+
+
+*/
