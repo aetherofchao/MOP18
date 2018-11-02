@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <bits/stdc++.h>
+
+using namespace std;
 
 struct List{
     long Size;
@@ -12,21 +15,21 @@ struct List{
 
 
 // declare all global variables
-int add(struct List *node, long addition);
-int load();
-int lichost();
+void add(struct List *node, long addition);
+void load();
+void lichost();
 
 // hledaní cest
 int spojL(long pocatek);
 int next();
 
 // výstup
-int addToReturn(long position);
+void addToReturn(long position);
 
 // helpers
-int egeing();
-int dell(long a, long b);
-int vynuluj(long *pole, long b);
+void egeing();
+void dell(long a, long b);
+void vynuluj(long *pole, long b);
 
 
 long n, m, k;
@@ -46,7 +49,9 @@ long BigReturnLengh;
 int main()
 {
     // dostan rozměry
-    scanf("%ld %ld %ld",&n, &m, &k);
+    cin >> n >> m >> k;
+    
+    
     newGenrationLeng = 0;
     licheLengh = 0;
     BigReturnLengh = 0;
@@ -73,8 +78,8 @@ int main()
     // nejsou-li zaden liché križovatky řešení je 0
     if (licheLengh == 0) 
     {
-        printf("0");
-        return 1;
+        cout << 0 << endl;
+        return 0;
     }
     
     // najdi vždy 2 nejbiší kriřovatky >>> inspirace Bellmann-Fordovým algoritmem (použití negativních ciklů je užitečné až v druhém příkladu)<<<
@@ -87,27 +92,24 @@ int main()
         if (spojL(liche[i]) == 1)
         {
             // bůh neexistuje uloha nemá řešení
-            printf("-1");
-            return -1;
+            cout << -1 << endl;
+            return 0;
         }
     }
     
     // vypis výstup
     for (long i = 0; i < BigReturnLengh; i += 2)
     {
-        printf("\n%ld %ld",BigReturn[i], BigReturn[i + 1]);
+       cout << BigReturn[i]<< " " << BigReturn[i + 1] << endl;
     }
-    
-    // vse probehlo v pořadku
-    return 0;
 }
 
 // fc pro přidávání prvků do listu
-int add(struct List *node, long addition)
+void add(struct List *node, long addition)
 { 
-    // basecase
-
-    if (node->Lengh +1 == node->Size) // 
+    node->Lengh++;
+    
+    if (node->Lengh == node->Size) // 
     {   
         node->Size *= 3;
         node->ulice = (long*)realloc(node->ulice,node->Size);
@@ -115,19 +117,17 @@ int add(struct List *node, long addition)
     
     // add
     node->ulice[node->Lengh] = addition;
-    node->Lengh++;
     node->actualleng++;
-    return 0;
 }
 
 // nactení pole
-int load()
+void load()
 {
     // načti ulice 
     int tmp1, tmp2;
     for (int i = 1; i <= m; i++) // projdi všechny řadky vztupu 
     {
-        scanf("%i %i",&tmp1, &tmp2);
+        cin >> tmp1 >> tmp2;
         if(i -1 < k) // potřebuju někat uložit které ul jsou zakazané zbořit
         {
             krizovatka[tmp1].actualleng++;
@@ -139,11 +139,11 @@ int load()
             add(&krizovatka[tmp2],tmp1);  // Z 2ho do 1ho
         }
     }
-    return 0;
+    return;
 }    
 
 // zjisti vsechna licha
-int lichost()
+void lichost()
 {
     // urči liché 
     // lichost můžeme kontrolovat až po načtení 
@@ -158,7 +158,6 @@ int lichost()
         else krizovatka[i].IsOdd = false;
     }
     krizovatka[0].IsOdd = false;
-    return 0;
 }
 
 
@@ -179,7 +178,7 @@ int spojL(long pocatek)
         // basecase
         if (newGenrationLeng == 0) return 1; // zadna cesta nevede do říma 
         
-        if (next() == 0) return 0; // vsehno probehlo hladce
+        if (next() == 1) return 0; // vsehno probehlo spatne
         
     } while (true); // dokud to neudelas nedostanes večeři
 }
@@ -209,17 +208,18 @@ int next()
                 krizovatka[dalsi].IsOdd = false;
     
                 addToReturn(dalsi);
-                return 0; // all have gone good 
+                return 1; // all have gone good 
             }
             newGenration[newGenrationLeng] = dalsi;
             newGenrationLeng++;
         }
     }
+    return 0;
 }
 
-int addToReturn(long position)
+void addToReturn(long position)
 {
-    if (predecesor[position] == position) return 0;
+    if (predecesor[position] == position) return;
    
     BigReturn[BigReturnLengh] = position;
     BigReturn[BigReturnLengh+ 1] = predecesor[position];
@@ -233,7 +233,7 @@ int addToReturn(long position)
     addToReturn(predecesor[position]);
 }
 
-int egeing()
+void egeing()
 {
     for (int i = 0; i <= newGenrationLeng; i++)
     {
@@ -242,7 +242,7 @@ int egeing()
     oldgenerationLengh = newGenrationLeng;
 }
 
-int dell(long a, long b)
+void dell(long a, long b)
 {
     for (int i = 0; i < krizovatka[a].Lengh; i++)
     {
@@ -250,7 +250,7 @@ int dell(long a, long b)
     }
 }
 
-int vynuluj(long *pole, long b)
+void vynuluj(long *pole, long b)
 {
     for (long i = 0; i < b; i++)
         {
